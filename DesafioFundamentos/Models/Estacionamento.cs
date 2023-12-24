@@ -1,4 +1,3 @@
-
 using System.Diagnostics.Contracts;
 
 namespace DesafioFundamentos.Models
@@ -8,6 +7,7 @@ namespace DesafioFundamentos.Models
         private decimal precoInicial = 0;
         private decimal precoPorHora = 0;
         private List<string> veiculos = new List<string>();
+        private List<Registro> registrosEstacionamento = new List<Registro>();
 
         public Estacionamento(decimal precoInicial, decimal precoPorHora)
         {
@@ -19,6 +19,7 @@ namespace DesafioFundamentos.Models
         {
             // Pedir para o usuário digitar uma placa (ReadLine) e adicionar na lista "veiculos"
             string placa = string.Empty;
+
             while(true)
             {
                 Console.WriteLine("Digite a placa do veículo para estacionar:");
@@ -27,13 +28,15 @@ namespace DesafioFundamentos.Models
                 Console.WriteLine("A placa informada é inválida. Siga o padrão LLLNLNN\n" +
                                   "L - letra; N - Número");
             }
-            veiculos.Add(placa);
+
+            veiculos.Add(placa.ToUpper());
         }
 
         private static bool ValidarPlaca(string placa)
         {
             bool isValid = true;
             string regraPadraoPlaca = "LLL0L00";
+
             if(!(placa.Length == 7))
             {
                 isValid = false;
@@ -43,12 +46,7 @@ namespace DesafioFundamentos.Models
                 for(int i = 0; i < placa.Length; i++)
                 {  
                     // checa se a placa esta de acordo com o padrão
-                    if(!(char.IsLetter(placa[i]) == char.IsLetter(regraPadraoPlaca[i])))
-                    {
-                        isValid = false;
-                        break;
-                    }
-                    if(!(char.IsDigit(placa[i]) == char.IsDigit(regraPadraoPlaca[i])))
+                    if(!(char.IsLetter(placa[i]) == char.IsLetter(regraPadraoPlaca[i])) || !(char.IsDigit(placa[i]) == char.IsDigit(regraPadraoPlaca[i])))
                     {
                         isValid = false;
                         break;
@@ -75,14 +73,38 @@ namespace DesafioFundamentos.Models
                 int.TryParse(Console.ReadLine(), out int horas);
                 decimal valorTotal = precoInicial + precoPorHora * horas; 
 
+                // adiciona o evento no registro
+                registrosEstacionamento.Add(new Registro(placa, valorTotal));
+
                 // Remover a placa digitada da lista de veículos
                 veiculos.Remove(placa);
 
-                Console.WriteLine($"O veículo {placa} foi removido e o preço total foi de: R$ {valorTotal}");
+                Console.WriteLine($"O veículo {placa} foi removido e o preço total foi de: {valorTotal:C}");
             }
             else
             {
                 Console.WriteLine("Desculpe, esse veículo não está estacionado aqui. Confira se digitou a placa corretamente");
+            }
+        }
+
+        public void GerarResumoDeGanhos()
+        {
+            decimal totalGanhos = 0;
+
+            if ( registrosEstacionamento.Any() )
+            {
+                Console.WriteLine("Resumo de ganhos");
+                foreach( Registro registro in registrosEstacionamento )
+                {
+                    // Exibe quais são os veículos e qual foi o valor pago por estacionar
+                    Console.WriteLine($"{registro.Placa}\t\t{registro.Valor:C}");
+                    totalGanhos += registro.Valor;
+                }
+                Console.WriteLine($"Total: \t\t {totalGanhos:C}");
+            }
+            else
+            {
+                Console.WriteLine("Não exitesm registros salvos");
             }
         }
 
